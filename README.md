@@ -8,8 +8,7 @@ This repository contains the data and source code associated with the manuscript
 This study develops an interpretable quantitative structure–property relationship (QSPR) framework for predicting the hydrogen adsorption capacity of ester molecules. The workflow integrates molecular descriptor calculation, unsupervised descriptor preprocessing, bootstrap-assisted LASSO stability selection, machine learning modeling, and post hoc interpretability analysis.
 
 ## Repository Structure
-
-```text
+text
 data/
 Molecular structures, experimental hydrogen adsorption data,
 molecular descriptors, and train/test assignments.
@@ -23,4 +22,4 @@ Descriptor-selection scores and model performance.
 
 ## Software Requirements
 The analyses were conducted using VS Code.
-Exact package versions are listed in: requirements.txt`
+Exact package versions are listed in: requirements.txt
