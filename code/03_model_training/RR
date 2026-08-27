@@ -1,0 +1,34 @@
+# ==========================================================
+# 1. RIDGE REGRESSION
+# ==========================================================
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from optuna.pruners import HyperbandPruner
+import optuna
+from sklearn.linear_model import Ridge
+
+
+def ridge_objective(trial):
+
+    model = Pipeline([
+        ("scaler", StandardScaler()),
+        ("ridge", Ridge(alpha=trial.suggest_float("alpha",1e-4,100,log=True)))
+    ])
+
+    return cv_score(model)
+
+
+study_ridge = optuna.create_study(
+    direction="maximize",
+    sampler=optuna.samplers.TPESampler(seed=42),
+    pruner=HyperbandPruner()
+)
+
+study_ridge.optimize(ridge_objective,n_trials=100)
+
+best_ridge = Pipeline([
+    ("scaler",StandardScaler()),
+    ("ridge",Ridge(**study_ridge.best_params))
+])
+
+best_ridge.fit(X_train,y_train)

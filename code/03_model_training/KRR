@@ -1,0 +1,38 @@
+# ==========================================================
+# 2. KERNEL RIDGE REGRESSION (KRR)
+# ==========================================================
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from optuna.pruners import HyperbandPruner
+import optuna
+from sklearn.kernel_ridge import KernelRidge
+
+
+def krr_objective(trial):
+
+    model = Pipeline([
+        ("scaler",StandardScaler()),
+        ("krr",KernelRidge(
+            alpha=trial.suggest_float("alpha",1e-4,100,log=True),
+            gamma=trial.suggest_float("gamma",1e-4,10,log=True),
+            kernel=trial.suggest_categorical("kernel",["rbf","polynomial","laplacian"])
+        ))
+    ])
+
+    return cv_score(model)
+
+
+study_krr = optuna.create_study(
+    direction="maximize",
+    sampler=optuna.samplers.TPESampler(seed=42),
+    pruner=HyperbandPruner()
+)
+
+study_krr.optimize(krr_objective,n_trials=100)
+
+best_krr = Pipeline([
+    ("scaler",StandardScaler()),
+    ("krr",KernelRidge(**study_krr.best_params))
+])
+
+best_krr.fit(X_train,y_train)
