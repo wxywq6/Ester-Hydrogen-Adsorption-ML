@@ -1,0 +1,31 @@
+# ==========================================================
+# 4. RANDOM FOREST
+# ==========================================================
+from optuna.pruners import HyperbandPruner
+import optuna
+from sklearn.ensemble import RandomForestRegressor
+
+def rf_objective(trial):
+
+    model = RandomForestRegressor(
+        n_estimators=trial.suggest_int("n_estimators", 50, 300),
+        max_depth=trial.suggest_int("max_depth", 1, 7),
+        min_samples_leaf=trial.suggest_int("min_samples_leaf", 2, 6),
+        min_samples_split=trial.suggest_int("min_samples_split", 2, 10),
+        max_features="sqrt",
+        random_state=42
+    )
+
+    return cv_score(model)
+
+
+study_rf = optuna.create_study(
+    direction="maximize",
+    sampler=optuna.samplers.TPESampler(seed=42),  # Bayesian
+    pruner=HyperbandPruner()
+)
+
+study_rf.optimize(rf_objective, n_trials=80)
+
+best_rf = RandomForestRegressor(**study_rf.best_params, random_state=42)
+best_rf.fit(X_train, y_train)

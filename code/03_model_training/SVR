@@ -1,0 +1,37 @@
+# ==========================================================
+# 3. SVR (OPTUNA + PIPELINE)
+# ==========================================================
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from optuna.pruners import HyperbandPruner
+import optuna
+from sklearn.svm import SVR
+
+
+def svr_objective(trial):
+
+    C = trial.suggest_float("C", 0.1, 50, log=True)
+    gamma = trial.suggest_float("gamma", 1e-4, 1, log=True)
+    epsilon = trial.suggest_float("epsilon", 0.01, 0.2)
+
+    model = Pipeline([
+        ("scaler", StandardScaler()),
+        ("svr", SVR(C=C, gamma=gamma, epsilon=epsilon))
+    ])
+
+    return cv_score(model)
+
+
+study_svr = optuna.create_study(
+    direction="maximize",
+    pruner=HyperbandPruner()
+)
+
+study_svr.optimize(svr_objective, n_trials=100)
+
+best_svr = Pipeline([
+    ("scaler", StandardScaler()),
+    ("svr", SVR(**study_svr.best_params))
+])
+
+best_svr.fit(X_train, y_train)
